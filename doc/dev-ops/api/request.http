@@ -1,0 +1,8 @@
+
+### 普通请求
+GET  http://127.0.0.1:8090/api/v1/ollama/generate?model=deepseek-r1:1.5b&message=hello
+### 流式请求
+GET  http://127.0.0.1:8090/api/v1/ollama/generate_stream?model=deepseek-r1:1.5b&message=hello
+
+### 生成请求
+
