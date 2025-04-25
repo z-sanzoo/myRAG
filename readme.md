@@ -75,6 +75,29 @@ curl -X GET "http://127.0.0.1:8090/api/v1/ollama/generate?model=deepseek-r1:1.5b
 ```bash
 curl -N -X GET "http://127.0.0.1:8090/api/v1/ollama/generate_stream?model=deepseek-r1:1.5b&message=hello"
 ```
+
+配置maven的profile的时候可以指定jvm参数
+```xml
+<profile>
+<id>dev</id>
+<activation>
+<activeByDefault>true</activeByDefault>
+</activation>
+<properties>
+<java_jvm>-Xms1G -Xmx1G -server  -XX:MaxPermSize=256M -Xss256K -Dspring.profiles.active=test -XX:+DisableExplicitGC -XX:+UseG1GC  -XX:LargePageSizeInBytes=128m -XX:+UseFastAccessorMethods -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/export/Logs/xfg-frame-archetype-lite-boot -Xloggc:/export/Logs/xfg-frame-archetype-lite-boot/gc-xfg-frame-archetype-lite-boot.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps</java_jvm>
+<profileActive>dev</profileActive>
+</properties>
+</profile>
+```
+
+内存配置：
+-Xms1G: 初始堆内存大小为 1GB
+-Xmx1G: 最大堆内存大小为 1GB
+-XX:MaxPermSize=256M: 永久代最大大小为 256MB（注意：JDK8 后被 Metaspace 替代）
+-Xss256K: 每个线程的栈大小为 256KB
+
+
+
 ## v2版本 
 生成前端,通过AI生成前端页面
 首先整理问题:
