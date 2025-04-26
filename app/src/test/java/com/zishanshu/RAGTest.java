@@ -25,6 +25,7 @@ import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 
@@ -46,6 +47,8 @@ public class RAGTest {
     @Autowired
     private OpenAiChatClient openAiChatClient;
 
+    @Resource
+    private JdbcTemplate jdbcTemplate;
     @Test
     public void upload() {
         // TikaDocumentReader可以读一个文件夹但是读到的好像就是文件夹下文件的名字
@@ -98,5 +101,28 @@ public class RAGTest {
 
         log.info("测试结果:{}", JSON.toJSONString(chatResponse));
     }
+    @Test
+    public void pgVector() {
+        // 使用原生 SQL 查询而不是向量相似度搜索
 
+
+//        String sql = "SELECT id, content, metadata FROM vector_store LIMIT 100";
+//        List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+//
+//        results.forEach(row -> {
+//            log.info("文档ID: {}", row.get("id"));
+//            log.info("文档内容: {}", row.get("content"));
+//            log.info("元数据: {}", row.get("metadata"));
+//            log.info("-------------------");
+//        });
+
+        // 按知识库标签查询
+        String tagSql = "SELECT id, content, metadata FROM vector_store WHERE metadata->>'knowledge' = ? LIMIT 100";
+        List<Map<String, Object>> taggedResults = jdbcTemplate.queryForList(tagSql, "知识库名称");
+
+        log.info("指定知识库的文档数量: {}", taggedResults.size());
+        taggedResults.forEach(row -> {
+            log.info("文档内容: {}", row.get("content"));
+        });
+    }
 }

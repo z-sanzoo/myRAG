@@ -10,6 +10,7 @@ import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.PgVectorStore;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,23 +20,42 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class OllamaConfig {
 
     @Bean
-    public OllamaApi ollamaApi(@Value("${spring.ai.ollama.base-url}") String baseUrl) {
+    @Qualifier("macbook")
+    public OllamaApi ollamaApiMacbook(@Value("${spring.ai.ollama.base-url-macbook}") String baseUrl) {
+        return new OllamaApi(baseUrl);
+    }
+
+    @Bean
+    @Qualifier("4090")
+    public OllamaApi ollamaApi4090(@Value("${spring.ai.ollama.base-url-4090}") String baseUrl) {
         return new OllamaApi(baseUrl);
     }
 
 
     @Bean
-    public OpenAiApi openAiApi(@Value("${spring.ai.openai.base-url}") String baseUrl, @Value("${spring.ai.openai.api-key}") String apikey) {
+    public OpenAiApi openaiApi(@Value("${spring.ai.openai.base-url}") String baseUrl, @Value("${spring.ai.openai.api-key}") String apikey) {
         return new OpenAiApi(baseUrl, apikey);
     }
 
+
+
     @Bean
-    public OllamaChatClient ollamaChatClient(OllamaApi ollamaApi) {
+    @Qualifier("MacbookChatClient")
+    public OllamaChatClient ollamaMacbookChatClient(@Qualifier("macbook") OllamaApi ollamaApi) {
         return new OllamaChatClient(ollamaApi);
     }
 
+
+    @Bean
+    @Qualifier("4090ChatClient")
+    public OllamaChatClient ollama4090ChatClient(@Qualifier("4090") OllamaApi ollamaApi) {
+        return new OllamaChatClient(ollamaApi);
+    }
+
+
     @Bean
     public OpenAiChatClient openAiChatClient(OpenAiApi openAiApi) {return new OpenAiChatClient(openAiApi);}
+
 
 
     @Bean
@@ -44,47 +64,41 @@ public class OllamaConfig {
     }
 
 //     下面这个函数是存储没有持久化的数据库,一旦程序断开rag的知识就会丢失
-    @Bean
-    public  SimpleVectorStore vectorStore(@Value("${spring.ai.rag.embed}") String model, OllamaApi ollamaApi) {
-        OllamaEmbeddingClient embeddingClient = new OllamaEmbeddingClient(ollamaApi);
-        embeddingClient.withDefaultOptions(OllamaOptions.create().withModel(model));
-        return new SimpleVectorStore(embeddingClient);
-    }
-    @Bean
-    public PgVectorStore pgVectorStore(@Value("${spring.ai.rag.embed}") String model, OllamaApi ollamaApi, JdbcTemplate jdbcTemplate) {
-        OllamaEmbeddingClient embeddingClient = new OllamaEmbeddingClient(ollamaApi);
-        embeddingClient.withDefaultOptions(OllamaOptions.create().withModel(model));
-        return new PgVectorStore(jdbcTemplate, embeddingClient);
-    }
-
-
-
-//
-//
 //    @Bean
-//    public SimpleVectorStore vectorStore(@Value("${spring.ai.rag.embed}") String model, OllamaApi ollamaApi, OpenAiApi openAiApi) {
-//        if ("nomic-embed-text".equalsIgnoreCase(model)) {
-//            OllamaEmbeddingClient embeddingClient = new OllamaEmbeddingClient(ollamaApi);
-//            embeddingClient.withDefaultOptions(OllamaOptions.create().withModel("nomic-embed-text"));
-//            return new SimpleVectorStore(embeddingClient);
-//        } else {
-//            OpenAiEmbeddingClient embeddingClient = new OpenAiEmbeddingClient(openAiApi);
-//            return new SimpleVectorStore(embeddingClient);
-//        }
+//    public  SimpleVectorStore vectorStore(@Value("${spring.ai.rag.embed}") String model, OllamaApi ollamaApi) {
+//        OllamaEmbeddingClient embeddingClient = new OllamaEmbeddingClient(ollamaApi);
+//        embeddingClient.withDefaultOptions(OllamaOptions.create().withModel(model));
+//        return new SimpleVectorStore(embeddingClient);
 //    }
-//
-//
+
 //    @Bean
-//    public PgVectorStore pgVectorStore(@Value("${spring.ai.rag.embed}") String model, OllamaApi ollamaApi, OpenAiApi openAiApi, JdbcTemplate jdbcTemplate) {
-//        if ("nomic-embed-text".equalsIgnoreCase(model)) {
-//            OllamaEmbeddingClient embeddingClient = new OllamaEmbeddingClient(ollamaApi);
-//            embeddingClient.withDefaultOptions(OllamaOptions.create().withModel("nomic-embed-text"));
-//            return new PgVectorStore(jdbcTemplate, embeddingClient);
-//        } else {
-//            OpenAiEmbeddingClient embeddingClient = new OpenAiEmbeddingClient(openAiApi);
-//            return new PgVectorStore(jdbcTemplate, embeddingClient);
-//        }
+//    @Qualifier("4090Embedding")
+//    public OllamaEmbeddingClient ollamaMacbookEmbeddingClient( @Value("${spring.ai.rag.embed}") String model,
+//                                                                          @Qualifier("4090") OllamaApi ollamaApi) {
+//        OllamaEmbeddingClient embeddingClient = new OllamaEmbeddingClient(ollamaApi);
+//        embeddingClient.withDefaultOptions(OllamaOptions.create().withModel(model));
+//        return embeddingClient;
 //    }
+//    @Bean
+//    public PgVectorStore pgVectorStore(
+//            @Qualifier("4090Embedding") OllamaEmbeddingClient embeddingClient,
+//            JdbcTemplate jdbcTemplate
+//    ) {
+//        return new PgVectorStore(jdbcTemplate, embeddingClient);
+//    }
+
+
+    @Bean
+    public PgVectorStore pgVectorStore(@Value("${spring.ai.rag.embed}") String model, @Qualifier("4090") OllamaApi ollamaApi, OpenAiApi openAiApi, JdbcTemplate jdbcTemplate) {
+        if ("nomic-embed-text".equalsIgnoreCase(model)) {
+            OllamaEmbeddingClient embeddingClient = new OllamaEmbeddingClient(ollamaApi);
+            embeddingClient.withDefaultOptions(OllamaOptions.create().withModel("nomic-embed-text"));
+            return new PgVectorStore(jdbcTemplate, embeddingClient);
+        } else {
+            OpenAiEmbeddingClient embeddingClient = new OpenAiEmbeddingClient(openAiApi);
+            return new PgVectorStore(jdbcTemplate, embeddingClient);
+        }
+    }
 
 
 }

@@ -3,6 +3,14 @@
 GET  http://127.0.0.1:8090/api/v1/ollama/generate?model=deepseek-r1:1.5b&message=hello
 ### 流式请求
 GET  http://127.0.0.1:8090/api/v1/ollama/generate_stream?model=deepseek-r1:1.5b&message=hello
+###
+GET  http://192.168.31.102:11434/api/model=deepseek-r1:7b&message=hello
+
+###
+GET http://192.168.31.102:11434/api/tags
+
+###x
+
 
 ### 生成请求
 

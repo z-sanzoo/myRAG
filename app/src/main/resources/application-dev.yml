@@ -28,7 +28,8 @@ spring:
       connection-test-query: SELECT 1
   ai:
     ollama:
-      base-url: http://127.0.0.1:11434
+      base-url-4090: http://192.168.31.102:11434
+      base-url-macbook: http://127.0.0.1:11434
       embedding:
         options:
           num-batch: 512
