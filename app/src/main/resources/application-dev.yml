@@ -27,19 +27,29 @@ spring:
       # 连接测试query
       connection-test-query: SELECT 1
   ai:
+    mcp:
+      client:
+        stdio:
+          servers-configuration: classpath:/mcp-config/mcp-servers-config-1.json
     ollama:
-      base-url-4090: http://192.168.31.102:11434
-      base-url-macbook: http://127.0.0.1:11434
+      base-url: http://192.168.31.102:11434
+      model: deepseek-r1:7b
       embedding:
-        options:
-          num-batch: 512
+        vectorTableName: vector_store
         model: nomic-embed-text
+        options:
+          num-batch: 768
     openai:
       base-url: https://api.deepseek.com
       api-key: sk-326d5871574a4d68a8d43901758a1a5b
-#      embedding-model: text-embedding-ada-002
-    rag:
-      embed: nomic-embed-text #nomic-embed-text、text-embedding-ada-002
+      chat:
+        options:
+          model: deepseek-chat
+      embedding:
+        options:
+          num-batch: 1536
+      embedding-model: text-embedding-ada-002
+
 
 
 # Redis

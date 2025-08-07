@@ -104,6 +104,34 @@
 </div>
 
 <script>
+
+
+    const loadRagOptions = () => {
+        const ragSelect = document.getElementById('ragSelect');
+
+        fetch('http://localhost:8090/api/v1/rag/query_rag_tag_list')
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    // 清空现有选项（保留第一个默认选项）
+                    while (ragSelect.options.length > 1) {
+                        ragSelect.remove(1);
+                    }
+
+                    // 添加新选项
+                    data.data.forEach(tag => {
+                        const option = new Option(`Rag：${tag}`, tag);
+                        ragSelect.add(option);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('获取知识库列表失败:', error);
+            });
+    };
+
+    // 初始化加载
+
     const loadingOverlay = document.getElementById('loadingOverlay');
 
     document.getElementById('uploadForm').addEventListener('submit', function(e) {
@@ -128,7 +156,8 @@
             if (data.code === 200) {
                 document.getElementById('status').textContent = '上传成功';
                 // 成功提示并关闭窗口
-                 setTimeout(() => {
+                loadRagOptions();
+                setTimeout(() => {
                    alert('上传成功，窗口即将关闭');
                    window.close();
                  }, 500);

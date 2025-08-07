@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/wuhao/Documents/temp",
+        "/Users/wuhao/Documents/temp"
+      ]
+    },
+    "mcp-server-computer": {
+      "command": "java",
+      "args": [
+        "-Dspring.ai.mcp.server.stdio=true",
+        "-jar",
+        "/Users/wuhao/Documents/ai/mcp-server-computer-master/target/mcp-server-computer-1.0.0.jar"
+      ]
+    }
+  }
+}
+

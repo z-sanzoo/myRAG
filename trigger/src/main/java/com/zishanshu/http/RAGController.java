@@ -17,6 +17,7 @@ import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.PgVectorStore;
 
 import org.springframework.core.io.PathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,6 +43,9 @@ public class RAGController implements IRAGService {
     private OpenAiChatClient openAiChatClient;
 
     @Resource
+    private JdbcTemplate jdbcTemplate;
+
+    @Resource
     private RedissonClient redisson;
 
     @RequestMapping(value = "query_rag_tag_list", method = RequestMethod.GET)
@@ -51,6 +55,27 @@ public class RAGController implements IRAGService {
         RList<String> elements = redisson.getList("ragTag");
         return Response.<List<String>>builder().code(200).message("调用成功").data(elements).build();
 
+    }
+
+    @RequestMapping(value = "delete_rag_tag", method = RequestMethod.DELETE)
+    @Override
+    public Response<String> deleteRagTag(@RequestParam("ragTag") String ragTag) {
+        log.info("删除知识库开始: {}", ragTag);
+
+        // 删除数据库中对应的知识库数据
+        String deleteSql = "DELETE FROM vector_store WHERE metadata->>'ragTag' = ?";
+        int rowsAffected = jdbcTemplate.update(deleteSql, ragTag);
+
+        // 从 Redis 中删除知识库标签
+        RList<String> elements = redisson.getList("ragTag");
+        elements.remove(ragTag);
+
+        log.info("删除知识库完成: {}, 删除的行数: {}", ragTag, rowsAffected);
+        return Response.<String>builder()
+                .code(200)
+                .message("删除知识库完成")
+                .data(ragTag)
+                .build();
     }
 
     @RequestMapping(value = "file/upload", method = RequestMethod.POST, headers = "content-type=multipart/form-data")
